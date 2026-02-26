@@ -12,8 +12,8 @@ from rclpy.node import Node
 from rclpy.executors import MultiThreadedExecutor
 from rclpy.callback_groups import MutuallyExclusiveCallbackGroup, ReentrantCallbackGroup
 from rclpy.time import Time
-from geometry_msgs.msg import Pose2D, PointStamped, PoseStamped
-from nav_msgs.msg import Odometry
+from geometry_msgs.msg import Pose2D, PointStamped, PoseStamped,TransformStamped
+from nav_msgs.msg import Odometry, Path as NavPath
 from std_msgs.msg import String
 from sensor_msgs.msg import PointCloud2, PointField
 from sensor_msgs_py.point_cloud2 import read_points_list, read_points_numpy
@@ -24,10 +24,14 @@ from language_planner.prompts import get_prompt
 from language_planner.llm_backend.llm_query_langchain import NavQueryRunMode, ObjectQueryType, LanguageModel, SystemMode
 from language_planner.language_planner_backend import LanguagePlannerBackend
 
+from scipy.spatial.transform import Rotation as R
+
 from captioner.tools import ros2_bag_utils
 from captioner.captioning_backend import CropUpdateSource
 
 from scipy.spatial.transform import Rotation as R
+
+from tf2_ros import TransformBroadcaster
 
 
 class PlatformType(Enum):
@@ -110,6 +114,95 @@ class LanguagePlanner(Node):
         self.object_dict = {}
         self.obj_query_response_echo = []
 
+        self.path_pub = self.create_publisher(NavPath, '/robot_path_history', 10)
+        self.path_history = NavPath()
+        self.path_history.header.frame_id = "map" # 轨迹参考坐标系
+        self.is_simulating_movement = False
+        self.sim_target_pos = None
+        self.move_speed = 0.5  # 模拟行走速度 0.5m/s
+        
+        # 路径记录容器 (使用我们刚刚起的别名 NavPath)
+        self.path_history = NavPath()
+        self.path_history.header.frame_id = "map"
+        
+        # 模拟位姿发布器（Bag停了，我们自己发位姿，箭头才会动）
+        self.sim_pose_pub = self.create_publisher(PoseStamped, '/mavros/vision_pose/pose', 10)
+        
+        # 定义模拟器定时器 (10Hz)
+        self.sim_timer = self.create_timer(0.1, self.sim_move_execution, callback_group=self.callback_group)
+
+        self.tf_broadcaster = TransformBroadcaster(self)
+
+    def sim_move_execution(self):
+        """
+        虚拟执行器：驱动机器人位置更新，并同步发布 Pose、Path 和 TF
+        """
+        if not self.is_simulating_movement or self.sim_target_pos is None:
+            return
+
+        # 1. 计算位移与剩余距离
+        direction = self.sim_target_pos - self.cur_pos
+        dist = np.linalg.norm(direction)
+
+        # 到达判定
+        if dist < 0.2:
+            self.is_simulating_movement = False
+            self.get_logger().info("🏁 [Simulator] 已到达目标点，停止模拟")
+            return
+
+        # 2. 更新内存中的坐标和朝向
+        step = self.move_speed * 0.1 # 因为定时器是 10Hz (0.1s)
+        self.cur_pos += (direction / dist) * step
+        
+        # 简单模拟转向：让机器人始终面向目标点
+        yaw = np.arctan2(direction[1], direction[0])
+        q = R.from_euler('z', yaw).as_quat()
+        self.cur_orient = np.array([q[0], q[1], q[2], q[3]])
+
+        # 3. 构造位姿消息 (PoseStamped)
+        now = self.get_clock().now().to_msg()
+        pose_msg = PoseStamped()
+        pose_msg.header.stamp = now
+        pose_msg.header.frame_id = "map"
+        pose_msg.pose.position.x = float(self.cur_pos[0])
+        pose_msg.pose.position.y = float(self.cur_pos[1])
+        pose_msg.pose.position.z = float(self.cur_pos[2])
+        pose_msg.pose.orientation.x = float(self.cur_orient[0])
+        pose_msg.pose.orientation.y = float(self.cur_orient[1])
+        pose_msg.pose.orientation.z = float(self.cur_orient[2])
+        pose_msg.pose.orientation.w = float(self.cur_orient[3])
+
+        # 发布 Pose 话题
+        self.sim_pose_pub.publish(pose_msg) 
+
+        # 4. 【关键】广播 TF 变换 (让 RViz 里的机器人模型/箭头动起来)
+        t = TransformStamped()
+        t.header.stamp = now
+        t.header.frame_id = 'map'
+        t.child_frame_id = 'base_link' # 必须对应你 RViz 中机器人的基础坐标系
+        t.transform.translation.x = pose_msg.pose.position.x
+        t.transform.translation.y = pose_msg.pose.position.y
+        t.transform.translation.z = pose_msg.pose.position.z
+        t.transform.rotation = pose_msg.pose.orientation
+        self.tf_broadcaster.sendTransform(t)
+
+        # 5. 记录并发布路径 (Path)
+        self.path_history.header.stamp = now
+        self.path_history.poses.append(pose_msg)
+        # 限制路径长度，防止内存溢出
+        if len(self.path_history.poses) > 2000:
+            self.path_history.poses.pop(0)
+        self.path_pub.publish(self.path_history)
+        
+        # 6. 打印移动状态
+        self.get_logger().info(f"🏃 [Sim] 正在移动... 距离剩余: {dist:.2f}m", throttle_duration_sec=1.0)
+
+    def record_path_history(self, current_pose_msg):
+        """记录并发布行走路径"""
+        self.path_history.header.stamp = current_pose_msg.header.stamp
+        self.path_history.poses.append(current_pose_msg)
+        self.path_pub.publish(self.path_history)
+
     def handle_hierarchy(self, msg: String):
         self.latest_hierarchy = msg.data
     
@@ -133,7 +226,7 @@ class LanguagePlanner(Node):
         rel_pos_global = np.array(target_pos) - self.cur_pos
         
         # 2. 获取机器人当前朝向的四元数逆旋转
-        from scipy.spatial.transform import Rotation as R
+        
         rot_robot = R.from_quat(self.cur_orient)
         
         # 3. 将位移旋转到机器人局部系：x'在前，y'在左，z'在上
@@ -309,28 +402,43 @@ class LanguagePlanner(Node):
 
 
     def publish_waypoints(self, ids, waypoints, object_dict):
-        if not len(waypoints):
-            return
-
+        """
+        修正版：支持跨越已知地图边界的长程导航
+        """
+        if not len(waypoints) or self.freespace_pcl is None: return
         freespace_points = self.freespace_pcl[:, :2]
 
         for i, (id_sublist, waypoint) in enumerate(zip(ids, waypoints)):
-            closest_point_idx = np.linalg.norm(freespace_points - waypoint, axis=-1).argmin()
-            closest_point = freespace_points[closest_point_idx]
+            # --- 核心改进：检查目标是否在已知地图内 ---
+            dist_to_map_edge = np.linalg.norm(freespace_points - waypoint, axis=-1).min()
+            
+            # 如果目标点距离最近的已知空地超过 2 米，说明在“地图外”
+            if dist_to_map_edge > 2.0:
+                self.get_logger().warn(f"🌐 目标 {waypoint} 在已知地图外，开启【长程探索】模式...")
+                # 直接使用 LLM 给出的原始绝对坐标，不再进行裁剪
+                target_xy = waypoint[:2]
+            else:
+                # 如果在地图内，则进行精确避障点映射
+                closest_idx = np.linalg.norm(freespace_points - waypoint, axis=-1).argmin()
+                target_xy = freespace_points[closest_idx]
 
-            repeats = 5
-            for k in range(repeats):
-                self.publish_waypoint(closest_point)
-                time.sleep(0.01)
+            # --- 驱动模拟器 ---
+            self.sim_target_pos = np.array([target_xy[0], target_xy[1], self.cur_pos[2]])
+            self.is_simulating_movement = True
+            
+            self.get_logger().info(f"🚀 [Sim] 目标坐标: {waypoint.round(2)} | 模拟行走至: {target_xy.round(2)}")
 
-            self.log_info(f"Navigating... ({i+1}/{len(waypoints)})")
-            while rclpy.ok():
-                dist_from_waypoint = np.linalg.norm(self.cur_pos[:2] - closest_point)
-                if dist_from_waypoint < 1.5:
-                    self.recolor_object_markers(object_dict, id_sublist)
-                    break
-        
-        self.log_info(f'Finished navigation.')
+            while self.is_simulating_movement and rclpy.ok():
+                self.publish_waypoint(target_xy)
+                
+                # 每步都要检查是否进入感知范围（触发重感知截断）
+                for obj_id in id_sublist:
+                    if obj_id in self.object_dict:
+                        if self.object_dict[obj_id]['relative_dist'] < self.focal_dist_threshold:
+                            self.get_logger().info(f"👀 [Sim] 接近目标 {obj_id}，准备精细推理")
+                            self.is_simulating_movement = False
+                            break
+                time.sleep(0.1)
     
 
     def log_llm_output(self, input_statement, output_code):
@@ -413,6 +521,7 @@ class LanguagePlanner(Node):
 
         self.object_dict = {}
         self.obj_query_response_echo = None
+        focal_candidate_ids = [] 
 
         if self.object_query_type == ObjectQueryType.CLIP_BASED:
             self.query_objects(obj_query_list)
@@ -424,30 +533,35 @@ class LanguagePlanner(Node):
             self.query_objects(["GET_ALL"])
             self.log_info("Queried objects")
             while rclpy.ok() and self.obj_query_response_echo != ["GET_ALL"]:
-                # pass
                 time.sleep(0.1)
             self.log_info("Response received! Proceeding to LLM planning...")
             
-            # 这里的 self.object_dict 键是字符串 (来自 JSON)
-            raw_object_dict = self.object_dict 
-            self.save_scene_objects_json(raw_object_dict) 
+            # 1. 获取包含“所有物体”的原始字典 (String keys)
+            raw_all_dict = self.object_dict 
+            self.save_scene_objects_json(raw_all_dict) 
 
-            filtered_obj_ids = self.language_planner_backend.get_retrieved_objects(obj_query_list, raw_object_dict)
+            # 2. 调用 LLM 过滤，获取候选目标 ID 列表
+            focal_candidate_ids = self.language_planner_backend.get_retrieved_objects(obj_query_list, raw_all_dict)
             
-            if '-1' in raw_object_dict:
-                filtered_obj_ids.append('-1')
+            # 3. 【核心修复】：构建一个完整的、标准化的 object_dict，并立即注入空间信息
+            standardized_dict = {}
+            for k_str, v_data in raw_all_dict.items():
+                if k_str == "-1": continue # 跳过机器人
+                
+                # 统一坐标键名
+                if "position" in v_data:
+                    v_data["centroid"] = v_data["position"]
+                
+                # --- 关键：在这里立即计算并注入 local_pos ---
+                dist, l_pos = self.get_relative_spatial_info(v_data['centroid'])
+                v_data['relative_dist'] = dist
+                v_data['local_pos'] = l_pos # 确保这个键存在！
+                
+                standardized_dict[int(k_str)] = v_data
+            
+            object_dict = standardized_dict # 替换为全量标准化字典
 
-            # 修复方案：强制转换 obj_id 为字符串去原字典查找，转换新字典键为整数
-            new_object_dict = {}
-            for obj_id in filtered_obj_ids:
-                str_id = str(obj_id)
-                if str_id in raw_object_dict:
-                    new_object_dict[int(obj_id)] = raw_object_dict[str_id]
-                else:
-                    self.log_info(f"Warning: LLM suggested ID {obj_id}, but it's not in the scene!")
-            
-            object_dict = new_object_dict
-            
+        # --- 4. 建立 Room 映射 (基于全量 object_dict) ---
         obj_to_room_map = {}
         if self.latest_hierarchy:
             import re
@@ -458,105 +572,88 @@ class LanguagePlanner(Node):
                 for oid in ids:
                     obj_to_room_map[int(oid)] = room_id
 
-        # 注入属性
-        for oid, info in object_dict.items():
-            if oid != -1:
-                info['parent_room_id'] = obj_to_room_map.get(int(oid))
-
+        # 5. 注入房间属性并确定机器人位置
         current_room_id = None
         min_dist = float('inf')
-        for obj_id, info in object_dict.items():
-            if obj_id == -1: continue
-            dist, local_pos = self.get_relative_spatial_info(info['centroid'])
-            info['relative_dist'] = dist
-            info['local_pos'] = local_pos
-            
-            # 以离机器人最近的、且已知房间 ID 的物体来确定机器人位置
-            if dist < min_dist and info.get('parent_room_id'):
-                min_dist = dist
+        for oid, info in object_dict.items():
+            info['parent_room_id'] = obj_to_room_map.get(oid)
+            # 确定机器人当前房间
+            if info['relative_dist'] < min_dist and info['parent_room_id']:
+                min_dist = info['relative_dist']
                 current_room_id = info['parent_room_id']
         
         self.robot_current_room = current_room_id
+        self.log_info(f"📍 预计算完成：机器人当前位于 {current_room_id}")
 
-        self.get_logger().info(f"📍 预计算完成：机器人当前位于 {current_room_id}, 已计算 {len(object_dict)} 个物体的 3D 相对位姿")
-
-        focal_objects = {}      # 高分辨率：详细 Caption + 8 邻域方位
-        peripheral_objects = {} # 中分辨率：仅 ID + 标签 + 距离
-        room_summaries = {}     # 低分辨率：仅房间概况
-
+        # --- 6. 多分辨率裁剪 (利用前面存好的 local_pos) ---
         processed_dict_for_backend = {}
+        peripheral_desc_lines = []
+        room_summaries = {}
 
         for obj_id, info in object_dict.items():
-            if obj_id == -1: continue
-            
             dist = info['relative_dist']
-            is_near = (dist < self.focal_dist_threshold)
-            is_in_sight = self.is_in_sight_octants(info['local_pos'])
+            rid = info.get('parent_room_id')
             
-            # 拷贝一份数据，避免修改原始缓存
+            # 判定 A: 是否在当前房间
+            is_local_room = (rid == self.robot_current_room)
+            # 判定 B: 是否在 3D 视野内 (前向象限)
+            is_in_sight = self.is_in_sight_octants(info['local_pos'])
+            # 判定 C: 是否在焦点距离内
+            is_near = (dist < self.focal_dist_threshold)
+            # 判定 D: 是否是 LLM 选出的候选目标 (来自 Filtered objects)
+            is_candidate = (str(obj_id) in [str(x) for x in focal_candidate_ids])
+
             info_to_send = info.copy()
 
-            # --- 分辨率决策 ---
-            if is_near and is_in_sight:
-                # 【高分辨率】在眼前且近：保留所有，LLM 能看到详细 Caption
-                pass 
+            if is_local_room:
+                if is_candidate and is_near and is_in_sight:
+                    # [TIER 1: 焦点区] - 保留所有信息 (Caption)
+                    processed_dict_for_backend[obj_id] = info_to_send
+                else:
+                    # [TIER 2: 外围区] - 抹除 Caption 节省 Token
+                    info_to_send['caption'] = "[Omitted]"
+                    processed_dict_for_backend[obj_id] = info_to_send
+                    peripheral_desc_lines.append(f"- {info['name']}(ID:{obj_id}, {dist:.1f}m)")
             else:
-                # 【低分辨率】在身后或太远：抹除 Caption，仅保留坐标和 ID
-                # 这样 LLM 知道它在哪，但不会被长文本淹没，也不会浪费 Token
-                info_to_send['caption'] = "[Description omitted due to distance/view]"
-            
-            processed_dict_for_backend[obj_id] = info_to_send
+                # [TIER 3: 记忆区] - 汇总到房间概况，不进入 processed_dict
+                if rid not in room_summaries:
+                    room_summaries[rid] = []
+                room_summaries[rid].append(info.get('name', 'item'))
 
-        # 2. 这里的 octant_desc 应该包含所有 processed_dict_for_backend 里的方位
-        # 这样 LLM 才能看到 "BACK: chair(ID:68, 22.8m)"
-        full_octant_desc = self.get_3d_octant_description(processed_dict_for_backend)
+        # 7. 生成全量 3D 罗盘观测 (用于让 LLM 看到远处的物体 ID)
+        # 参数 1: TIER 1 罗盘描述 (仅显示当前房间的物体分布)
+        local_room_objs = {k: v for k, v in processed_dict_for_backend.items() 
+                           if v.get('parent_room_id') == self.robot_current_room}
+        octant_desc = self.get_3d_octant_description(local_room_objs)
 
-        # 生成房间概况文本（零 Token 预压缩）
-        room_desc_lines = []
+        # 参数 2: TIER 2 外围物体清单
+        peripheral_desc = "=== Nearby Objects (Out of Sight or Far) ===\n"
+        peripheral_desc += "\n".join(peripheral_desc_lines) if peripheral_desc_lines else "(None)"
+
+        # 参数 3: TIER 3 全局记忆汇总
+        memory_lines = []
         for rid, items in room_summaries.items():
             counts = {name: items.count(name) for name in set(items)}
             summary = ", ".join([f"{count} {name}(s)" for name, count in counts.items()])
-            room_desc_lines.append(f"Room {rid} (Far away) contains: {summary}")
-        
-        global_memory_desc = "\n".join(room_desc_lines)
-        # 1. 组装外围物体的简要清单 (Mid-Res)
-        peripheral_desc = "=== Nearby Objects (Out of Sight or Far) ===\n"
-        for oid, info in peripheral_objects.items():
-            peripheral_desc += f"- {info['name']}(ID:{oid}, {info['relative_dist']:.1f}m)\n"
-        if not peripheral_objects: peripheral_desc += "(None)\n"
+            memory_lines.append(f"Room {rid} (Distant) contains: {summary}")
+        global_memory_desc = "\n".join(memory_lines) if memory_lines else "(No other rooms detected)"
 
-        local_room_objects = {oid: info for oid, info in object_dict.items() 
-                              if info.get('parent_room_id') == current_room_id}
-        
-        # 这个描述会告诉 LLM：即便在 BACK（后方），那里也有个椅子
-        octant_desc = self.get_3d_octant_description(local_room_objects)
+        # 打印调试信息
+        self.get_logger().info(f"📊 [Token Opt] 焦点物体: {len(local_room_objs)} | 外围物体: {len(peripheral_desc_lines)}")
 
-        # 打印日志方便你调试
-        self.get_logger().info(f"\n[DEBUG] 当前 3D 焦点观测：\n{octant_desc}")
-            
-        # --- 对比实验开关 ---
-        USE_HIERARCHY = True  # 改为 False 即关闭层次化
-        # ------------------
-
-        if not USE_HIERARCHY:
-            # 1. 清空层级描述，让 LLM 拿不到房间和组的信息
-            display_hierarchy = "" 
-            self.log_info("🧪 [Experiment] 正在以【非层次化/扁平模式】运行推理...")
-        else:
-            display_hierarchy = self.latest_hierarchy
-
-        # 3. 修改后端调用：传入三级分辨率数据
+        # --- 8. 正式调用后端生成 Plan ---
         self.target_waypoints, self.target_ids, filtered_objects_out, output_code = self.language_planner_backend.generate_plan(
             self.environment_name,
             input_statement,
             self.map_pcl,
             self.freespace_pcl,
-            processed_dict_for_backend,  # 只有这里的物体带有冗长的 Caption
+            processed_dict_for_backend, # 裁剪后的全量字典
             self.cur_pos,
-            scene_hierarchy=display_hierarchy,
-            compass_description=full_octant_desc, # 这里的 octant_desc 仅包含 focal_objects 的方位
-            peripheral_description=peripheral_desc, # 新增
-            global_memory_description=global_memory_desc # 新增
+            scene_hierarchy=self.latest_hierarchy,
+            compass_description=octant_desc,        # 对应 TIER 1
+            peripheral_description=peripheral_desc,   # 对应 TIER 2
+            global_memory_description=global_memory_desc,
+            full_object_dict=object_dict
         )
 
         self.log_info(output_code)
@@ -564,6 +661,20 @@ class LanguagePlanner(Node):
 
         self.publish_object_markers(object_dict, self.target_ids)
         self.publish_waypoints(self.target_ids, self.target_waypoints, object_dict)
+        target_reached_focal = False
+        for sub_ids in self.target_ids:
+            for oid in sub_ids:
+                if oid in object_dict and object_dict[oid]['relative_dist'] < self.focal_dist_threshold:
+                    target_reached_focal = True
+        
+        if not target_reached_focal and rclpy.ok():
+            self.get_logger().info("🔄 [Re-perception] 目标尚远，正在靠近并准备下一轮精化推理...")
+            # 延时一段时间，让机器狗多走一段距离
+            time.sleep(2.0) 
+            new_msg = String(data=input_statement)
+            self.handle_language_query(new_msg)
+        else:
+            self.get_logger().info("🏁 任务完成：目标已在视野内并成功到达。")
 
     def save_scene_objects_json(self, object_dict):
         """

@@ -1,0 +1,8 @@
+===============
+INPUT STATEMENT
+===============
+go to the chair
+===============
+OUTPUT CODE
+===============
+Error: Error response 429 while fetching https://api.mistral.ai/v1/chat/completions: {"object":"error","message":"Service tier capacity exceeded for this model.","type":"service_tier_capacity_exceeded","param":null,"code":"3505"}

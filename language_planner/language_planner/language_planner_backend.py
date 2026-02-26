@@ -64,7 +64,8 @@ class LanguagePlannerBackend:
             scene_hierarchy: str = "",
             compass_description: str = "",
             peripheral_description: str = "", # 新增
-            global_memory_description: str = ""):
+            global_memory_description: str = "",
+            full_object_dict: dict = None):
 
         if not object_dict:
             return [], [], [], ""
@@ -128,8 +129,8 @@ class LanguagePlannerBackend:
         self.log_info("output code")
         self.log_info(f'{output_code}')
 
-        waypoints, ids = self.parse_code(output_code, object_dict, object_id_map)
+        parse_dict = full_object_dict if full_object_dict is not None else object_dict
+        waypoints, ids = self.parse_code(output_code, parse_dict, object_id_map)
 
         # 确保这里返回的是刚刚定义的 filtered_objects_out
         return waypoints, ids, filtered_objects_out, output_code
-

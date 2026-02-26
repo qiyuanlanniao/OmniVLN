@@ -57,19 +57,20 @@ High-level summary of other areas:
 
 === User Instruction ===
 go to the chair
-AI Calling tool notepad with args {'thoughts': 'I see three chairs in my immediate field of view:\n\n1. **chair(ID:73)**: Located in **FRONT_LEFT_BOTTOM** at 2.2m.\n2. **chair(ID:63)**: Located in **FRONT_RIGHT_BOTTOM** at 2.7m.\n3. **chair(ID:58)**: Located in **BACK_RIGHT_BOTTOM** at 4.0m.\n\nThe user instructed me to "go to the chair" without specifying which one. Since no additional context is provided, I will prioritize the closest chair, which is **chair(ID:73)** in **FRONT_LEFT_BOTTOM** at 2.2m.'}
+AI Calling tool notepad with args {'thoughts': 'The user has instructed me to "go to the chair." \n\nFrom the **3D Octant Observation**, I can see three chairs in my immediate field of view:\n1. **chair(ID:73)** in **FRONT_LEFT_BOTTOM** (2.2m away).\n2. **chair(ID:63)** in **FRONT_RIGHT_BOTTOM** (2.7m away).\n3. **chair(ID:58)** in **BACK_RIGHT_BOTTOM** (4.0m away).\n\nSince the user did not specify which chair, I should navigate to the closest one, which is **chair(ID:73)** in **FRONT_LEFT_BOTTOM**.'}
 AI Calling tool command_robot with args {'list_of_commands': [['go_near', [73]]]}
 Tool: notepad, Content: Noted and please proceed with the next step!
 Tool: command_robot, Content: The robot has executed the commands successfully, now say 'done'!
 AI: done
 Reasoning: 
-I see three chairs in my immediate field of view:
+The user has instructed me to "go to the chair." 
 
-1. **chair(ID:73)**: Located in **FRONT_LEFT_BOTTOM** at 2.2m.
-2. **chair(ID:63)**: Located in **FRONT_RIGHT_BOTTOM** at 2.7m.
-3. **chair(ID:58)**: Located in **BACK_RIGHT_BOTTOM** at 4.0m.
+From the **3D Octant Observation**, I can see three chairs in my immediate field of view:
+1. **chair(ID:73)** in **FRONT_LEFT_BOTTOM** (2.2m away).
+2. **chair(ID:63)** in **FRONT_RIGHT_BOTTOM** (2.7m away).
+3. **chair(ID:58)** in **BACK_RIGHT_BOTTOM** (4.0m away).
 
-The user instructed me to "go to the chair" without specifying which one. Since no additional context is provided, I will prioritize the closest chair, which is **chair(ID:73)** in **FRONT_LEFT_BOTTOM** at 2.2m.
+Since the user did not specify which chair, I should navigate to the closest one, which is **chair(ID:73)** in **FRONT_LEFT_BOTTOM**.
 Code:
 def go():
     go_near(73)

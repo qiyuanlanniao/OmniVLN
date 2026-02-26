@@ -394,6 +394,13 @@ class LanguagePlanner(Node):
             else:
                 self.log_info(f"❌ 严重错误：找不到层级描述文件 {hierarchy_path}，LLM 将失去上下文！")
                 return
+            pose_path = os.path.join(maps_dir, "last_robot_pose.json")
+            if os.path.exists(pose_path):
+                with open(pose_path, "r") as f:
+                    pose_data = json.load(f)
+                    self.cur_pos = np.array(pose_data["position"])
+                    self.cur_orient = np.array(pose_data["orientation"])
+                self.log_info(f"📍 [Offline] 机器人初始位置已恢复: {self.cur_pos}")
         
         input_statement = msg.data
 
@@ -560,7 +567,7 @@ class LanguagePlanner(Node):
 
     def save_scene_objects_json(self, object_dict):
         """
-        保存地图中“全量”识别物体的详情
+        保存地图中“全量”物体信息，并包含机器狗（ID: -1）的实时位姿
         """
         maps_dir = os.path.join(os.path.expanduser("~"), "hm/ros2_ws/maps")
         os.makedirs(maps_dir, exist_ok=True)
@@ -568,28 +575,37 @@ class LanguagePlanner(Node):
 
         all_objects_data = []
         
-        # 遍历原始字典中的每一个物体
+        # 1. 首先添加机器狗（Ego Robot）的信息
+        # 利用类成员 self.cur_pos 获取当前最新的坐标
+        all_objects_data.append({
+            "id": -1,
+            "name": "egorobot",
+            "position": self.cur_pos.tolist(),
+            "caption": "The ego robot being navigated around the room. It has an ID of -1. "
+        })
+
+        # 2. 遍历字典中的其他物体
         for obj_id_str, info in object_dict.items():
-            # 跳过机器人节点 (-1)
+            # 跳过已经在上面手动添加过的 -1 节点
             if str(obj_id_str) == "-1":
                 continue
                 
             all_objects_data.append({
-                "id": int(obj_id_str), # 确保 ID 是整数
+                "id": int(obj_id_str),
                 "name": info.get("name", "unknown"),
                 "position": info.get("centroid", [0.0, 0.0, 0.0]),
                 "caption": info.get("caption", "No description available")
             })
 
-        # 按 ID 排序，方便查看
+        # 按 ID 排序（机器狗 -1 会排在最前面）
         all_objects_data.sort(key=lambda x: x["id"])
 
         try:
             with open(json_path, 'w', encoding='utf-8') as f:
                 json.dump(all_objects_data, f, indent=4, ensure_ascii=False)
-            self.log_info(f"✅ [Full Export] 全量物体信息({len(all_objects_data)}个)已保存至: {json_path}")
+            self.log_info(f"✅ [Full Export] 包含机器狗在内的 {len(all_objects_data)} 个物体已保存至: {json_path}")
         except Exception as e:
-            self.log_info(f"❌ 导出全量 JSON 失败: {e}")
+            self.log_info(f"❌ 导出 JSON 失败: {e}")
 
         
 def main():

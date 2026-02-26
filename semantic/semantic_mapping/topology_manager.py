@@ -1,4 +1,5 @@
 import ast
+import json
 import rclpy
 from rclpy.node import Node
 import numpy as np
@@ -111,6 +112,12 @@ class TopologyManager(Node):
 
     def pose_callback(self, msg):
         curr_pos = np.array([msg.pose.position.x, msg.pose.position.y, msg.pose.position.z])
+        self.cur_orient_quat = [
+            msg.pose.orientation.x,
+            msg.pose.orientation.y,
+            msg.pose.orientation.z,
+            msg.pose.orientation.w
+        ]
         if self.last_pos is None or np.linalg.norm(curr_pos - self.last_pos) > self.min_dist_between_nodes:
             if self.latest_cloud_msg is not None:
                 # 无论是否生成节点成功，都先记录位置防止死循环
@@ -283,7 +290,7 @@ class TopologyManager(Node):
                 dist = np.linalg.norm(pos_a - pos_b)
 
                 # --- 抗细脖子判据 ---
-                if bridge_count <= 4 and dist < 5.0:
+                if bridge_count <= 4 and dist < 6.0:
                     merged_core |= core_b
                     used.add(j)
 
@@ -548,6 +555,11 @@ class TopologyManager(Node):
         msg.data = full_scene_report
         self.hierarchy_pub.publish(msg)
         save_path = "/home/iot/hm/ros2_ws/maps/latest_scene_graph.txt"
+        if self.last_pos is not None:
+            pose_path = "/home/iot/hm/ros2_ws/maps/last_robot_pose.json"
+            with open(pose_path, "w") as f:
+                json.dump({"position": self.last_pos.tolist(), "orientation": self.cur_orient_quat}, f)
+        self.get_logger().info(f"💾 机器人位姿已固化至 {pose_path}")
         with open(save_path, "w") as f:
             f.write(full_scene_report)
         self.get_logger().info(f"✅ [[DSG Export] 层级与连通性已打包发送并保存")

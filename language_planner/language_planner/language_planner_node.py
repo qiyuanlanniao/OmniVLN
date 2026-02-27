@@ -133,6 +133,29 @@ class LanguagePlanner(Node):
 
         self.tf_broadcaster = TransformBroadcaster(self)
 
+        self.clear_timer = self.create_timer(1.0, self.clear_path_on_startup)
+        
+    def clear_path_on_startup(self):
+        """
+        启动时向 RViz 发送空路径，清理上一轮留下的视觉残留
+        """
+        # 1. 构造一个完全空的 Path 消息
+        empty_path = NavPath()
+        empty_path.header.frame_id = "map"
+        empty_path.header.stamp = self.get_clock().now().to_msg()
+        empty_path.poses = [] # 明确清空列表
+        
+        # 2. 发布清空信号
+        self.path_pub.publish(empty_path)
+        
+        # 3. 同时也清空内存中的历史记录
+        self.path_history = empty_path
+        
+        self.get_logger().info("🧹 [Cleanup] 已清理 RViz 中的历史路径轨迹")
+        
+        # 4. 销毁这个定时器，确保它只在启动时运行一次
+        self.clear_timer.cancel()
+
     def sim_move_execution(self):
         """
         虚拟执行器：驱动机器人位置更新，并同步发布 Pose、Path 和 TF

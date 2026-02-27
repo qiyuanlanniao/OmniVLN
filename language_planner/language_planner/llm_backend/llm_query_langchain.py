@@ -15,6 +15,7 @@ from langchain_core.messages import BaseMessage
 import sys
 import os
 from time import time, sleep
+import csv
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from prompts import (
     get_caption_prompt, 
@@ -284,6 +285,30 @@ class LLMQueryHandler:
                 warnings.warn(f"Error generating navigation query: {e}")
                 traceback.print_exc()
                 return f"Error: {e}"
+
+            # 1. 提取本次对话的 Token 统计
+            total_input_tokens = 0
+            total_output_tokens = 0
+
+            for msg in state["messages"]:
+                if isinstance(msg, AIMessage) and msg.response_metadata:
+                    # Mistral 和 OpenAI 的结构略有不同，这里做兼容处理
+                    usage = msg.response_metadata.get("token_usage", {}) or msg.response_metadata.get("usage", {})
+                    if usage:
+                        total_input_tokens += usage.get("prompt_tokens", 0)
+                        total_output_tokens += usage.get("completion_tokens", 0)
+
+            print(f"[LLM] 📊 [Token Stats] Input: {total_input_tokens}, Output: {total_output_tokens}, Total: {total_input_tokens + total_output_tokens}")
+            
+            # 3. 建议保存到本地 CSV，方便后续画图
+            token_log_path = "/home/iot/hm/ros2_ws/maps/token_usage_log.csv"
+            
+            file_exists = os.path.isfile(token_log_path)
+            with open(token_log_path, 'a', newline='') as f:
+                writer = csv.writer(f)
+                if not file_exists:
+                    writer.writerow(['timestamp', 'query', 'input_tokens', 'output_tokens', 'total_tokens'])
+                writer.writerow([time(), input_query, total_input_tokens, total_output_tokens, total_input_tokens + total_output_tokens])
 
             # 7. 解析结果与 Traces (保持原有解析逻辑)
             # ... (这部分代码与你提供的源码一致，用于提取 steps, cmds, thoughts) ...

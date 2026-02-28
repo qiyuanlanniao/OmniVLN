@@ -1,0 +1,8 @@
+===============
+INPUT STATEMENT
+===============
+A white, metal, rectangular cabinet functioning as a storage unit for electronic equipment. It is located in room_1 as a standalone object.
+===============
+OUTPUT CODE
+===============
+Error: cannot schedule new futures after interpreter shutdown

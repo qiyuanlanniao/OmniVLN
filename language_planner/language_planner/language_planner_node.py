@@ -6,16 +6,18 @@ import argparse
 import sys
 from enum import Enum
 from pathlib import Path
+import cv2  
+import glob 
 
 import rclpy
 from rclpy.node import Node
 from rclpy.executors import MultiThreadedExecutor
 from rclpy.callback_groups import MutuallyExclusiveCallbackGroup, ReentrantCallbackGroup
 from rclpy.time import Time
-from geometry_msgs.msg import Pose2D, PointStamped, PoseStamped,TransformStamped
+from geometry_msgs.msg import Pose2D, PointStamped, PoseStamped,TransformStamped, Point
 from nav_msgs.msg import Odometry, Path as NavPath
-from std_msgs.msg import String
-from sensor_msgs.msg import PointCloud2, PointField
+from std_msgs.msg import String, ColorRGBA
+from sensor_msgs.msg import PointCloud2, PointField, Image as ROSImage
 from sensor_msgs_py.point_cloud2 import read_points_list, read_points_numpy
 from visualization_msgs.msg import MarkerArray, Marker
 import time
@@ -32,6 +34,7 @@ from captioner.captioning_backend import CropUpdateSource
 from scipy.spatial.transform import Rotation as R
 
 from tf2_ros import TransformBroadcaster
+from cv_bridge import CvBridge
 
 
 class PlatformType(Enum):
@@ -134,6 +137,68 @@ class LanguagePlanner(Node):
         self.tf_broadcaster = TransformBroadcaster(self)
 
         self.clear_timer = self.create_timer(1.0, self.clear_path_on_startup)
+
+        self.target_image_pub = self.create_publisher(ROSImage, '/target_object_crop', 10)
+        self.bridge = CvBridge()
+        self.crops_base_path = "/home/iot/hm/ros2_ws/src/semantic/semantic_mapping/captioner/crops"
+
+    def show_target_in_rviz(self, target_id, object_dict):
+        """
+        在 RViz 中高亮显示目标物体：发布抠图照片 + 在头上顶个大绿箭头
+        """
+        if target_id not in object_dict: return
+        
+        info = object_dict[target_id]
+        pos = info['centroid']
+        
+        # --- 1. 检索图片文件 ---
+        import os
+        import glob
+        try:
+            # 找到最新的日期文件夹 (2026-02-28_...)
+            date_folders = sorted(glob.glob(os.path.join(self.crops_base_path, "*")))
+            if not date_folders: return
+            latest_date_folder = date_folders[-1]
+            
+            # 在日期文件夹里找以 "{ID}_" 开头的子文件夹
+            target_folders = glob.glob(os.path.join(latest_date_folder, f"{target_id}_*"))
+            if target_folders:
+                crop_path = os.path.join(target_folders[0], "crop.png")
+                if os.path.exists(crop_path):
+                    # 读取并发布图片
+                    cv_img = cv2.imread(crop_path)
+                    ros_img = self.bridge.cv2_to_imgmsg(cv_img, encoding="bgr8")
+                    self.target_image_pub.publish(ros_img)
+                    self.log_info(f"🖼️ [Visuals] 已发布目标 {target_id} 的抠图: {crop_path}")
+        except Exception as e:
+            self.get_logger().error(f"提取目标图片失败: {e}")
+
+        # --- 2. 发布巨大的绿色向下箭头 ---
+        now = self.get_clock().now().to_msg()
+        marker = Marker()
+        marker.header.frame_id = "map"
+        marker.header.stamp = now
+        marker.ns = "target_indicator"
+        marker.id = 9999 # 使用固定 ID 确保只有一个箭头
+        marker.type = Marker.ARROW
+        marker.action = Marker.ADD
+        
+        # 设置箭头位置：在物体中心点上方 1.5 米处开始
+        start_point = Point(x=float(pos[0]), y=float(pos[1]), z=float(pos[2]) + 1.5)
+        # 终点：物体中心点
+        end_point = Point(x=float(pos[0]), y=float(pos[1]), z=float(pos[2]) + 0.3)
+        
+        marker.points = [start_point, end_point]
+        
+        # 箭头粗细
+        marker.scale.x = 0.15 # 轴直径
+        marker.scale.y = 0.3  # 箭头直径
+        marker.scale.z = 0.4  # 箭头长度
+        
+        # 亮绿色
+        marker.color = ColorRGBA(r=0.0, g=1.0, b=0.0, a=1.0)
+        
+        self.object_marker_pub.publish(marker)
         
     def clear_path_on_startup(self):
         """
@@ -437,7 +502,7 @@ class LanguagePlanner(Node):
             
             # 如果目标点距离最近的已知空地超过 2 米，说明在“地图外”
             if dist_to_map_edge > 2.0:
-                self.get_logger().warn(f"🌐 目标 {waypoint} 在已知地图外，开启【长程探索】模式...")
+                # self.get_logger().warn(f"🌐 目标 {waypoint} 在已知地图外，开启【长程探索】模式...")
                 # 直接使用 LLM 给出的原始绝对坐标，不再进行裁剪
                 target_xy = waypoint[:2]
             else:
@@ -678,6 +743,12 @@ class LanguagePlanner(Node):
             global_memory_description=global_memory_desc,
             full_object_dict=object_dict
         )
+
+        # 触发目标视觉化
+        if self.target_ids:
+            # 假设取第一个识别出的 ID 作为主要目标
+            primary_target_id = self.target_ids[0][0] 
+            self.show_target_in_rviz(primary_target_id, object_dict)
 
         self.log_info(output_code)
         self.log_llm_output(input_statement, output_code)

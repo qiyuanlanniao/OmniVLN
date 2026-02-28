@@ -1,0 +1,8 @@
+===============
+INPUT STATEMENT
+===============
+A black, metal cabinet with a glass door and a handle on the left. It is located in room_1 as a standalone object.
+===============
+OUTPUT CODE
+===============
+Error: cannot schedule new futures after interpreter shutdown

@@ -1,0 +1,8 @@
+===============
+INPUT STATEMENT
+===============
+A black, glossy, rectangular screen with a reflective surface. It is part of Group 0 in room_1.
+===============
+OUTPUT CODE
+===============
+Error: Error response 429 while fetching https://api.mistral.ai/v1/chat/completions: {"object":"error","message":"Rate limit exceeded","type":"rate_limited","param":null,"code":"1300"}

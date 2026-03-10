@@ -56,8 +56,8 @@
       1.25
     ],
     "room": 1,
-    "caption": "An ultra-wide curved monitor with a glossy finish. It is mounted on a flexible arm stand, allowing for easy adjustment of height and tilt during intensive computer work sessions.",
-    "instruction": "Navigate to the ultra-wide curved monitor with a glossy finish that is mounted on a flexible arm stand."
+    "caption": "An ultra-wide curved screen with a glossy finish. It is mounted on a flexible arm stand, allowing for easy adjustment of height and tilt during intensive computer work sessions.",
+    "instruction": "Navigate to the ultra-wide curved screen with a glossy finish that is mounted on a flexible arm stand."
   },
   {
     "id": 5,
@@ -116,8 +116,8 @@
       0.55
     ],
     "room": 2,
-    "caption": "A soft armchair covered in velvet, offering a cozy spot for reading. The deep cushions and high backrest provide great support, perfect for long periods of relaxation.",
-    "instruction": "Find the soft armchair upholstered in velvet material, featuring deep cushions and a high backrest."
+    "caption": "A soft chair covered in velvet, offering a cozy spot for reading. The deep cushions and high backrest provide great support, perfect for long periods of relaxation.",
+    "instruction": "Find the soft chair upholstered in velvet material, featuring deep cushions and a high backrest."
   },
   {
     "id": 10,
@@ -176,8 +176,8 @@
       0.85
     ],
     "room": 3,
-    "caption": "An adjustable-height standing desk with a white laminate top. The electric motor allows the user to transition smoothly between sitting and standing positions throughout the long day.",
-    "instruction": "Go to the adjustable-height standing desk featuring a white laminate top and an integrated electric motor."
+    "caption": "An adjustable-height standing table with a white laminate top. The electric motor allows the user to transition smoothly between sitting and standing positions throughout the long day.",
+    "instruction": "Go to the adjustable-height standing table featuring a white laminate top and an integrated electric motor."
   },
   {
     "id": 15,

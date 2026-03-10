@@ -55,8 +55,8 @@
       1.2
     ],
     "room": 1,
-    "caption": "A purple high-definition display monitor mounted on an adjustable swivel arm. It affords clear visibility of system data and is connected via a thick black cable to the desk below.",
-    "instruction": "Navigate to the purple high-definition display monitor mounted on an adjustable swivel arm and connected by a thick black cable."
+    "caption": "A purple high-definition screen mounted on an adjustable swivel arm. It affords clear visibility of system data and is connected via a thick black cable to the desk below.",
+    "instruction": "Navigate to the purple high-definition screen mounted on an adjustable swivel arm and connected by a thick black cable."
   },
   {
     "id": 5,
@@ -199,8 +199,8 @@
       1.2
     ],
     "room": 1,
-    "caption": "A purple secondary monitor used for vertical coding. It has an anti-glare coating and affords a crisp view of long scripts, reducing eye strain during extended work sessions.",
-    "instruction": "Go to the purple secondary monitor with an anti-glare coating oriented for vertical coding."
+    "caption": "A purple secondary screen used for vertical coding. It has an anti-glare coating and affords a crisp view of long scripts, reducing eye strain during extended work sessions.",
+    "instruction": "Go to the purple secondary screen with an anti-glare coating oriented for vertical coding."
   },
   {
     "id": 17,
@@ -247,8 +247,8 @@
       1.3
     ],
     "room": 2,
-    "caption": "A purple wall-mounted tablet used for smart home control. It displays temperature and lighting settings and affords quick adjustments to the room's environmental conditions via touch.",
-    "instruction": "Navigate to the purple wall-mounted tablet used for smart home control."
+    "caption": "A purple wall-mounted screen used for smart home control. It displays temperature and lighting settings and affords quick adjustments to the room's environmental conditions via touch.",
+    "instruction": "Navigate to the purple wall-mounted screen used for smart home control."
   },
   {
     "id": 21,
@@ -319,8 +319,8 @@
       0.0
     ],
     "room": 1,
-    "caption": "The green height-adjustable standing desk. It features an electric motor and affords the user the ability to switch between sitting and standing positions with one button.",
-    "instruction": "Go to the green height-adjustable standing desk equipped with an electric motor."
+    "caption": "The green height-adjustable standing table. It features an electric motor and affords the user the ability to switch between sitting and standing positions with one button.",
+    "instruction": "Go to the green height-adjustable standing table equipped with an electric motor."
   },
   {
     "id": 27,
@@ -343,8 +343,8 @@
       1.0
     ],
     "room": 1,
-    "caption": "A purple curved gaming monitor with a high refresh rate. It is placed on a dedicated gaming rig and affords an immersive visual experience for simulator training.",
-    "instruction": "Navigate to the purple curved gaming monitor with a high refresh rate mounted on a dedicated gaming rig."
+    "caption": "A purple curved gaming screen with a high refresh rate. It is placed on a dedicated gaming rig and affords an immersive visual experience for simulator training.",
+    "instruction": "Navigate to the purple curved gaming screen with a high refresh rate mounted on a dedicated gaming rig."
   },
   {
     "id": 29,

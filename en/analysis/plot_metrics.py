@@ -67,4 +67,4 @@ def analyze_results(dataset_name):
     plt.savefig(os.path.join(results_dir, f"{dataset_name}_comparison.png"), dpi=300)
 
 if __name__ == "__main__":
-    analyze_results("D3")
+    analyze_results("D9")

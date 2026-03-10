@@ -17,8 +17,8 @@ def run_experiment():
     builder = PromptBuilder()
     client = QwenVLMClient()
     script_dir = os.path.dirname(os.path.abspath(__file__))
-    data_path = os.path.join(script_dir,"../data/D1.json")
-    result_path = os.path.join(script_dir,"../results/D1_ours_results.csv")
+    data_path = os.path.join(script_dir,"../data/D9.json")
+    result_path = os.path.join(script_dir,"../results/D9_ours_results.csv")
     
     with open(data_path, 'r') as f:
         all_data = json.load(f)
@@ -46,9 +46,15 @@ def run_experiment():
         # 判定结果
         pred_id = -1
         if res["success"]:
-            match = re.search(r"go_near\((\d+)\)", res["answer"])
+            ans = res["answer"]
+            # 1. 尝试匹配 go_near(数字)
+            match = re.search(r"go_near\(.*?(\d+)", ans)
             if match:
                 pred_id = int(match.group(1))
+            else:
+                # 2. 兜底方案：直接找字符串里的所有数字，取最后一个
+                all_nums = re.findall(r"\d+", ans)
+                pred_id = int(all_nums[-1]) if all_nums else -1
         
         success = 1 if pred_id == target_id else 0
         

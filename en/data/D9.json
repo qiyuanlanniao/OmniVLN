@@ -36,8 +36,8 @@
     "name": "screen",
     "position": [3.44, -8.12, 1.45],
     "room": 3,
-    "caption": "A wide-screen computer monitor mounted on an adjustable metal arm. The display has a thin bezel and a matte anti-glare coating, currently reflecting a soft blue glow from the room's overhead lighting.",
-    "instruction": "Go to the wide-screen computer monitor mounted on an adjustable metal arm, featuring a thin bezel and a matte anti-glare coating."
+    "caption": "A wscreen mounted on an adjustable metal arm. The display has a thin bezel and a matte anti-glare coating, currently reflecting a soft blue glow from the room's overhead lighting.",
+    "instruction": "Go to the screen mounted on an adjustable metal arm, featuring a thin bezel and a matte anti-glare coating."
   },
   {
     "id": 5,
@@ -68,8 +68,8 @@
     "name": "screen",
     "position": [-2.50, 9.15, 1.20],
     "room": 1,
-    "caption": "A large flat-panel television fixed securely to the wall. The screen is currently black, indicating it is powered off, and its glossy frame reflects the opposite side of the quiet room.",
-    "instruction": "Navigate to the large wall-mounted flat-panel television featuring a glossy frame."
+    "caption": "A large flat-panel screen fixed securely to the wall. The screen is currently black, indicating it is powered off, and its glossy frame reflects the opposite side of the quiet room.",
+    "instruction": "Navigate to the large wall-mounted flat-panel screen featuring a glossy frame."
   },
   {
     "id": 9,
@@ -84,32 +84,32 @@
     "name": "chair",
     "position": [1.45, -1.50, 0.42],
     "room": 3,
-    "caption": "A soft upholstered armchair covered in a light blue velvet material. It has deep seat cushions and rounded armrests, inviting someone to sit and relax in the quiet corner of the room.",
-    "instruction": "Go to the upholstered armchair covered in light blue velvet material with deep seat cushions and rounded armrests."
+    "caption": "A soft upholstered chair covered in a light blue velvet material. It has deep seat cushions and rounded armrests, inviting someone to sit and relax in the quiet corner of the room.",
+    "instruction": "Go to the upholstered chair covered in light blue velvet material with deep seat cushions and rounded armrests."
   },
   {
     "id": 11,
     "name": "table",
     "position": [6.70, -9.20, 0.75],
     "room": 3,
-    "caption": "A heavy industrial workbench with a reinforced steel frame and a thick plywood top. Several small hand tools are scattered across the surface near a heavy-duty metal vice bolted to the edge.",
-    "instruction": "Navigate to the industrial workbench with a reinforced steel frame and a thick plywood top, identifiable by the heavy-duty metal vice bolted to its edge."
+    "caption": "A heavy industrial table with a reinforced steel frame and a thick plywood top. Several small hand tools are scattered across the surface near a heavy-duty metal vice bolted to the edge.",
+    "instruction": "Navigate to the industrial table with a reinforced steel frame and a thick plywood top, identifiable by the heavy-duty metal vice bolted to its edge."
   },
   {
     "id": 12,
     "name": "screen",
     "position": [-5.50, -5.50, 1.05],
     "room": 2,
-    "caption": "A digital photo frame displaying a rotating gallery of vibrant landscape images. The screen is bright, encased in a simple black frame that matches the nearby modern office decor.",
-    "instruction": "Find the bright digital photo frame encased in a simple black frame."
+    "caption": "A screen displaying a rotating gallery of vibrant landscape images. The screen is bright, encased in a simple black frame that matches the nearby modern office decor.",
+    "instruction": "Find the bright screen encased in a simple black frame."
   },
   {
     "id": 13,
     "name": "cabinet",
     "position": [2.30, -3.10, 0.85],
     "room": 3,
-    "caption": "A compact bedside nightstand with a single drawer and an open lower compartment. It is crafted from light-colored pine wood and has a small ceramic lamp resting on its flat top.",
-    "instruction": "Go to the compact pine wood bedside nightstand featuring a single drawer and an open lower compartment."
+    "caption": "A cabinet bedside nightstand with a single drawer and an open lower compartment. It is crafted from light-colored pine wood and has a small ceramic lamp resting on its flat top.",
+    "instruction": "Go to the cabinet pine wood bedside nightstand featuring a single drawer and an open lower compartment."
   },
   {
     "id": 14,
@@ -124,8 +124,8 @@
     "name": "table",
     "position": [-4.10, -1.20, 1.00],
     "room": 2,
-    "caption": "A height-adjustable standing desk with a clean white laminate surface. A small control panel on the front edge allows the user to save preferred heights for ergonomic working positions.",
-    "instruction": "Go to the height-adjustable standing desk featuring a clean white laminate surface and a control panel on the front edge."
+    "caption": "A height-adjustable standing table with a clean white laminate surface. A small control panel on the front edge allows the user to save preferred heights for ergonomic working positions.",
+    "instruction": "Go to the height-adjustable standing table featuring a clean white laminate surface and a control panel on the front edge."
   },
   {
     "id": 16,
@@ -140,16 +140,16 @@
     "name": "screen",
     "position": [-8.22, -4.11, 1.30],
     "room": 2,
-    "caption": "A thin tablet device lying flat on a nearby surface. Its touchscreen is covered in fingerprints, and the metallic silver casing glints under the room's warm yellow light sources.",
-    "instruction": "Navigate to the thin tablet device with a metallic silver casing that is lying flat on a surface."
+    "caption": "A thin screen lying flat on a nearby surface. Its touchscreen is covered in fingerprints, and the metallic silver casing glints under the room's warm yellow light sources.",
+    "instruction": "Navigate to the thin screen with a metallic silver casing that is lying flat on a surface."
   },
   {
     "id": 18,
     "name": "cabinet",
     "position": [5.60, -7.20, 1.80],
     "room": 3,
-    "caption": "A large wooden wardrobe with integrated mirrors on the front doors. It occupies most of the wall space and provides ample room for hanging clothes and storing folded linens.",
-    "instruction": "Go to the large wooden wardrobe featuring integrated mirrors on its front doors."
+    "caption": "A large wooden cabinet with integrated mirrors on the front doors. It occupies most of the wall space and provides ample room for hanging clothes and storing folded linens.",
+    "instruction": "Go to the large wooden cabinet featuring integrated mirrors on its front doors."
   },
   {
     "id": 19,
@@ -164,24 +164,24 @@
     "name": "chair",
     "position": [3.40, -5.20, 0.48],
     "room": 3,
-    "caption": "A swivel stool with a polished chrome base and a bright red vinyl seat. It is positioned at counter height, suitable for use in a modern kitchen or a bar area.",
-    "instruction": "Find the counter-height swivel stool featuring a polished chrome base and a bright red vinyl seat."
+    "caption": "A chair with a polished chrome base and a bright red vinyl seat. It is positioned at counter height, suitable for use in a modern kitchen or a bar area.",
+    "instruction": "Find the counter-height chair featuring a polished chrome base and a bright red vinyl seat."
   },
   {
     "id": 21,
     "name": "cabinet",
     "position": [-3.45, 0.50, 0.90],
     "room": 1,
-    "caption": "A low credenza made of dark walnut wood with four sliding panels. It features a minimalist handle-less design and serves as a base for decorative items and electronic components.",
-    "instruction": "Go to the low dark walnut credenza featuring a handle-less design and four sliding panels."
+    "caption": "A low cabinet made of dark walnut wood with four sliding panels. It features a minimalist handle-less design and serves as a base for decorative items and electronic components.",
+    "instruction": "Go to the low dark walnut cabinet featuring a handle-less design and four sliding panels."
   },
   {
     "id": 22,
     "name": "screen",
     "position": [7.30, -2.15, 1.10],
     "room": 3,
-    "caption": "A curved gaming monitor with a fast refresh rate. The back of the monitor features customizable RGB lighting that casts a soft purple glow against the adjacent wall surface.",
-    "instruction": "Navigate to the curved gaming monitor that has customizable RGB lighting on its back."
+    "caption": "A curved gaming screen with a fast refresh rate. The back of the monitor features customizable RGB lighting that casts a soft purple glow against the adjacent wall surface.",
+    "instruction": "Navigate to the curved gaming screen that has customizable RGB lighting on its back."
   },
   {
     "id": 23,
@@ -204,8 +204,8 @@
     "name": "cabinet",
     "position": [-7.80, -8.40, 1.20],
     "room": 2,
-    "caption": "A vintage wooden chest of drawers with decorative brass handles. The surface shows some signs of wear, adding character to this classical piece of bedroom furniture in the corner.",
-    "instruction": "Navigate to the vintage wooden chest of drawers located in the corner, featuring decorative brass handles."
+    "caption": "A vintage wooden cabinet of drawers with decorative brass handles. The surface shows some signs of wear, adding character to this classical piece of bedroom furniture in the corner.",
+    "instruction": "Navigate to the vintage wooden cabinet of drawers located in the corner, featuring decorative brass handles."
   },
   {
     "id": 26,
@@ -213,7 +213,7 @@
     "position": [-4.20, 2.10, 1.40],
     "room": 1,
     "caption": "A laptop computer sitting open on a desk. The bright screen displays a complex spreadsheet with various charts, and the backlit keyboard is visible in the dim room.",
-    "instruction": "Find the open laptop computer on the desk, identifiable by its bright screen and backlit keyboard."
+    "instruction": "Find the open screen on the desk, identifiable by its bright screen and backlit keyboard."
   },
   {
     "id": 27,
@@ -245,7 +245,7 @@
     "position": [-9.30, -0.50, 1.25],
     "room": 2,
     "caption": "A smart thermostat screen mounted on the wall. The small circular display shows the current indoor temperature and a digital clock, glowing with a soft white backlight.",
-    "instruction": "Navigate to the wall-mounted smart thermostat featuring a small circular display with a white backlight."
+    "instruction": "Navigate to the wall-mounted smart thermostat screen featuring a small circular display with a white backlight."
   },
   {
     "id": 31,
@@ -260,24 +260,24 @@
     "name": "chair",
     "position": [8.20, -7.30, 0.40],
     "room": 3,
-    "caption": "A modern stool with a bentwood seat and slim black metal legs. Its ergonomic shape provides comfort despite the lack of padding, fitting well into a contemporary bar area.",
-    "instruction": "Find the modern stool with a bentwood seat and slim black metal legs."
+    "caption": "A modern chair with a bentwood seat and slim black metal legs. Its ergonomic shape provides comfort despite the lack of padding, fitting well into a contemporary bar area.",
+    "instruction": "Find the modern chair with a bentwood seat and slim black metal legs."
   },
   {
     "id": 33,
     "name": "cabinet",
     "position": [-4.15, -2.50, 1.10],
     "room": 2,
-    "caption": "A tall bookcase with six adjustable shelves. It is made of dark-stained oak and is currently filled with a diverse collection of hardback books and small decorative statues.",
-    "instruction": "Navigate to the tall dark-stained oak bookcase featuring six adjustable shelves."
+    "caption": "A tall cabinet with six adjustable shelves. It is made of dark-stained oak and is currently filled with a diverse collection of hardback books and small decorative statues.",
+    "instruction": "Navigate to the tall dark-stained oak cabinet featuring six adjustable shelves."
   },
   {
     "id": 34,
     "name": "screen",
     "position": [-1.10, 1.50, 1.30],
     "room": 1,
-    "caption": "A digital signage display oriented vertically. It is currently showing a welcome message and a map of the building, with high-contrast text that is easy to read from a distance.",
-    "instruction": "Go to the vertical digital signage display showing a welcome message and building map."
+    "caption": "A digital signage screen oriented vertically. It is currently showing a welcome message and a map of the building, with high-contrast text that is easy to read from a distance.",
+    "instruction": "Go to the vertical digital signage screen showing a welcome message and building map."
   },
   {
     "id": 35,
@@ -308,8 +308,8 @@
     "name": "screen",
     "position": [-2.15, -7.30, 1.10],
     "room": 2,
-    "caption": "A small monitor used for home security surveillance. It displays a four-way split view of different camera angles around the property, with clear images even in low light.",
-    "instruction": "Go to the small home security monitor displaying a four-way split camera view."
+    "caption": "A small screen used for home security surveillance. It displays a four-way split view of different camera angles around the property, with clear images even in low light.",
+    "instruction": "Go to the small home security screen displaying a four-way split camera view."
   },
   {
     "id": 39,
@@ -340,8 +340,8 @@
     "name": "screen",
     "position": [-0.50, -9.30, 1.25],
     "room": 3,
-    "caption": "A built-in touchscreen panel for a smart home system. The sleek interface allows for control of lighting, music, and security throughout the house from this central hub location.",
-    "instruction": "Navigate to the built-in smart home touchscreen panel featuring a sleek control interface."
+    "caption": "A built-in screen panel for a smart home system. The sleek interface allows for control of lighting, music, and security throughout the house from this central hub location.",
+    "instruction": "Navigate to the built-in smart home screen panel featuring a sleek control interface."
   },
   {
     "id": 43,
@@ -364,8 +364,8 @@
     "name": "cabinet",
     "position": [-2.50, -4.15, 1.10],
     "room": 2,
-    "caption": "A wall-mounted TV console with a high-gloss black finish. It has several open compartments for media players and game consoles, keeping the cables neatly hidden from view.",
-    "instruction": "Navigate to the wall-mounted high-gloss black TV console featuring several open compartments."
+    "caption": "A wall-mounted cabinet with a high-gloss black finish. It has several open compartments for media players and game consoles, keeping the cables neatly hidden from view.",
+    "instruction": "Navigate to the wall-mounted high-gloss black cabinet featuring several open compartments."
   },
   {
     "id": 46,
@@ -373,7 +373,7 @@
     "position": [1.50, -1.10, 1.30],
     "room": 3,
     "caption": "An e-ink reader resting on a side table. The screen shows a page of text from a novel, and its glare-free surface looks exactly like printed paper under the sun.",
-    "instruction": "Find the e-ink reader with a glare-free surface resting on the side table."
+    "instruction": "Find the screen with a glare-free surface resting on the side table."
   },
   {
     "id": 47,

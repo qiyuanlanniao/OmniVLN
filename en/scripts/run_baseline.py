@@ -17,8 +17,8 @@ def run_experiment():
     builder = PromptBuilder()
     client = QwenVLMClient()
     script_dir = os.path.dirname(os.path.abspath(__file__))
-    data_path = os.path.join(script_dir, "../data/D8.json")
-    result_path = os.path.join(script_dir, "../results/D8_baseline_results.csv")
+    data_path = os.path.join(script_dir, "../data/D9.json")
+    result_path = os.path.join(script_dir, "../results/D9_baseline_results.csv")
     
     with open(data_path, 'r') as f:
         all_data = json.load(f)

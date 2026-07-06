@@ -1,7 +1,0 @@
-===============
-INPUT STATEMENT
-===============
-go to the second nearest cabinet on your right
-===============
-OUTPUT CODE
-===============

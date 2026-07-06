@@ -1,7 +1,0 @@
-===============
-INPUT STATEMENT
-===============
-go to the chair
-===============
-OUTPUT CODE
-===============

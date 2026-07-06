@@ -1,8 +1,0 @@
-===============
-INPUT STATEMENT
-===============
-go to the nearest screen
-===============
-OUTPUT CODE
-===============
-Error: cannot schedule new futures after interpreter shutdown
